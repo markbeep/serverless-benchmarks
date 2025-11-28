@@ -8,6 +8,11 @@ python-venv
 cache*
 !cache.py
 
+# Local benchmarks
+out_benchmark.json
+out_storage.json
+local_deployment.json
+
 minio-volume
 scylladb-volume
 

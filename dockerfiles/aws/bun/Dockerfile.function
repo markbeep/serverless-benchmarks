@@ -1,0 +1,8 @@
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
+COPY . function/
+COPY handler.js .
+RUN cd function \
+    && bun install --no-package-lock --production
+
+CMD ["handler.handler"]
