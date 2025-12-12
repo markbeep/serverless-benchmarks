@@ -2,11 +2,10 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 
 COPY --from=tianon/gosu:1.19-debian /usr/local/bin/gosu /usr/local/bin/gosu
-# TODO: figure out what is needed for bare-bones aws lambda image
-COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.9.0 /lambda-adapter /opt/extensions/lambda-adapter
 
 RUN mkdir -p /sebs/
-COPY dockerfiles/bun_installer.sh /sebs/installer.sh
+# For AWS we need to compile the bun files into a bootstrap file
+COPY dockerfiles/aws/bun/aws_bun_installer.sh /sebs/installer.sh
 COPY dockerfiles/entrypoint.sh /sebs/entrypoint.sh
 RUN chmod +x /sebs/entrypoint.sh
 

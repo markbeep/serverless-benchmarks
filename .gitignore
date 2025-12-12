@@ -12,6 +12,7 @@ cache*
 out_benchmark.json
 out_storage.json
 local_deployment.json
+experiments.json
 
 minio-volume
 scylladb-volume
@@ -195,3 +196,6 @@ cache
 
 # MacOS Finder
 **/.DS_Store
+
+# Editors
+.vscode

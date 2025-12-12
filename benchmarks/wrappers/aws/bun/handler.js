@@ -13,7 +13,7 @@ exports.handler = async function(event, context) {
   var start = process.hrtime();
   var http_trigger = "body" in event;
   var input_data = http_trigger ? JSON.parse(event.body) : event
-  var func = require('./function/function')
+  var func = require('./function') // Different to nodejs, since the function will be on the same level at the time of compilation
   var ret = func.handler(input_data);
   return ret.then(
     (result) => {

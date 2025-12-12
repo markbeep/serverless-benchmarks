@@ -162,7 +162,8 @@
         "deployment": {
           "files": [
             "handler.js",
-            "storage.js"
+            "storage.js",
+            "runtime.js"
           ],
           "packages": {
             "uuid": "3.4.0"
