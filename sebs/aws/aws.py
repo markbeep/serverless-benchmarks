@@ -137,6 +137,7 @@ class AWS(System):
         CONFIG_FILES = {
             "python": ["handler.py", "requirements.txt", ".python_packages"],
             "nodejs": ["handler.js", "package.json", "node_modules"],
+            "bun": ["handler.js", "package.json", "node_modules"],
         }
         package_config = CONFIG_FILES[language_name]
         function_dir = os.path.join(directory, "function")
@@ -169,12 +170,15 @@ class AWS(System):
         return architecture
 
     def _map_language_runtime(self, language: str, runtime: str):
-
+        # AWS only supports a handful of runtimes
+        # https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html#runtimes-supported
+        if language not in ["python", "nodejs", "java", "dotnet", "ruby"]:
+            return "provided.al2023"
         # AWS uses different naming scheme for Node.js versions
         # For example, it's 12.x instead of 12.
         if language == "nodejs":
-            return f"{runtime}.x"
-        return runtime
+            return f"{language}{runtime}.x"
+        return f"{language}{runtime}"
 
     def create_function(
         self,
@@ -251,14 +255,13 @@ class AWS(System):
                         "S3Key": code_prefix,
                     }
 
-                create_function_params["Runtime"] = "{}{}".format(
-                    language, self._map_language_runtime(language, language_runtime)
-                )
+                create_function_params["Runtime"] = self._map_language_runtime(language, language_runtime)
                 create_function_params["Handler"] = "handler.handler"
 
             create_function_params = {
                 k: v for k, v in create_function_params.items() if v is not None
             }
+            print({k:v for k,v in create_function_params.items() if k != "Code"})
             ret = self.client.create_function(**create_function_params)
 
             lambda_function = LambdaFunction(

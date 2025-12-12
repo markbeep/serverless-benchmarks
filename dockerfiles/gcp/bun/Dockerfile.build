@@ -9,7 +9,7 @@ RUN mkdir -p ${NVM_DIR} && wget -qO- https://raw.githubusercontent.com/nvm-sh/nv
 RUN . ${NVM_DIR}/nvm.sh && nvm install ${VERSION} && nvm alias default ${VERSION} && nvm use default
 
 RUN mkdir -p /sebs/
-COPY dockerfiles/nodejs_installer.sh /sebs/installer.sh
+COPY dockerfiles/bun_installer.sh /sebs/installer.sh
 COPY dockerfiles/entrypoint.sh /sebs/entrypoint.sh
 RUN chmod +x /sebs/entrypoint.sh
 

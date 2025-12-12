@@ -1,3 +1,3 @@
 #!/bin/bash
 
-node /sebs/server.js "$@"
+bun run --bun /sebs/server.js "$@"

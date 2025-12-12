@@ -223,7 +223,11 @@ class Local(System):
             container_kwargs["command"] = f"/bin/bash /sebs/run_server.sh {port}"
             container_kwargs["ports"] = {f"{port}/tcp": port}
 
-        container = self._docker_client.containers.run(**container_kwargs)
+        try:
+            container = self._docker_client.containers.run(**container_kwargs)
+        except docker.errors.NotFound as e:
+            self.logging.error(f"Failed to start function container. Image {container_name} not found. Has the image been built locally?")
+            raise e from None
 
         pid: Optional[int] = None
         if self.measurements_enabled and self._memory_measurement_path is not None:
@@ -258,10 +262,11 @@ class Local(System):
             func._measurement_pid = pid
 
         # Wait until server starts
-        max_attempts = 10
+        max_attempts = 50
         attempts = 0
         while attempts < max_attempts:
             try:
+                self.logging.debug(f"Checking if function {func_name} is alive at {func.url}...")
                 requests.get(f"http://{func.url}/alive")
                 break
             except requests.exceptions.ConnectionError:
