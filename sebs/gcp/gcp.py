@@ -8,6 +8,7 @@ import math
 import zipfile
 from datetime import datetime, timezone
 from typing import cast, Dict, Optional, Tuple, List, Type
+import fnmatch
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -148,18 +149,20 @@ class GCP(System):
         CONFIG_FILES = {
             "python": ["handler.py", ".python_packages"],
             "nodejs": ["handler.js", "node_modules"],
-            "pypy" : ["handler.py", ".python_packages"]
+            "pypy" : ["handler.py", ".python_packages"],
+            "bun": ["*"], # ignore all files from bun / do not move them into a subdirectory
         }
         HANDLER = {
             "python": ("handler.py", "main.py"),
             "nodejs": ("handler.js", "index.js"),
             "pypy": ("handler.py", "main.py"),
+            "bun": ("bootstrap", "bootstrap"),
         }
         package_config = CONFIG_FILES[language_name]
         function_dir = os.path.join(directory, "function")
         os.makedirs(function_dir)
         for file in os.listdir(directory):
-            if file not in package_config:
+            if not any(fnmatch.fnmatch(file, pattern) for pattern in package_config):
                 file = os.path.join(directory, file)
                 shutil.move(file, function_dir)
 
