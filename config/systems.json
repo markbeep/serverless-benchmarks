@@ -322,7 +322,7 @@
       }
     },
     "architecture": ["x64"],
-    "deployments": ["package"]
+    "deployments": ["package", "container"]
   },
   "openwhisk": {
     "languages": {
