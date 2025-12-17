@@ -13,11 +13,15 @@ parser.add_argument(
     "--deployment", default=None, choices=["local", "aws", "azure", "gcp"], action="store"
 )
 parser.add_argument("--type", default=None, choices=["build", "run", "manage"], action="store")
-parser.add_argument("--language", default=None, choices=["python", "nodejs", "bun"], action="store")
+parser.add_argument("--language", default=None, choices=["python", "nodejs", "pypy", "bun"], action="store")
 parser.add_argument("--language-version", default=None, type=str, action="store")
+# Optional: force build platform (e.g., linux/amd64 on Apple Silicon)
+parser.add_argument("--platform", default=None, type=str, action="store")
 args = parser.parse_args()
 config = json.load(open(os.path.join(PROJECT_DIR, "config", "systems.json"), "r"))
 client = docker.from_env()
+# Prefer explicit CLI platform, otherwise fall back to environment
+PLATFORM = args.platform or os.environ.get("DOCKER_DEFAULT_PLATFORM")
 
 
 def build(image_type, system, language=None, version=None, version_name=None):
@@ -51,8 +55,26 @@ def build(image_type, system, language=None, version=None, version_name=None):
             target, PROJECT_DIR, dockerfile, buildargs
         )
     )
+    build_kwargs = {
+        "path": PROJECT_DIR,
+        "dockerfile": dockerfile,
+        "buildargs": buildargs,
+        "tag": target,
+    }
+    if PLATFORM:
+        build_kwargs["platform"] = PLATFORM
+    elif system in config and "architecture" in config[system]:
+        archs = config[system]["architecture"]
+        if len(archs) == 1:
+            if archs[0] == "x64":
+                build_kwargs["platform"] = "linux/amd64"
+                print(f"Automatically using platform linux/amd64 for {system}")
+            elif archs[0] == "arm64":
+                build_kwargs["platform"] = "linux/arm64"
+                print(f"Automatically using platform linux/arm64 for {system}")
+
     try:
-        client.images.build(path=PROJECT_DIR, dockerfile=dockerfile, buildargs=buildargs, tag=target)
+        client.images.build(**build_kwargs)
     except docker.errors.BuildError as exc:
         print("Error! Build failed!")
         print(exc)

@@ -252,9 +252,10 @@ class Benchmark(LoggingBase):
         FILES = {
             "python": ["*.py", "requirements.txt*"],
             "nodejs": ["*.js", "package.json"],
+            "pypy": ["*.py", "requirements.txt*"],
             "bun": ["*.js", "package.json"],
         }
-        WRAPPERS = {"python": "*.py", "nodejs": "*.js", "bun": "*.js"}
+        WRAPPERS = {"python": "*.py", "nodejs": "*.js", "pypy": "*.py", "bun": "*.js"}
         NON_LANG_FILES = ["*.sh", "*.json"]
         selected_files = FILES[language] + NON_LANG_FILES
         for file_type in selected_files:
@@ -317,6 +318,7 @@ class Benchmark(LoggingBase):
         FILES = {
             "python": ["*.py", "requirements.txt*"],
             "nodejs": ["*.js", "package.json"],
+            "pypy": ["*.py", "requirements.txt*"],
             "bun": ["*.js", "package.json"],
         }
         path = os.path.join(self.benchmark_path, self.language_name)
@@ -374,6 +376,8 @@ class Benchmark(LoggingBase):
             )
             for package in packages:
                 out.write(package)
+                if not package.endswith('\n'):
+                    out.write('\n')
 
             module_packages = self._system_config.deployment_module_packages(
                 self._deployment_name, self.language_name
@@ -382,6 +386,8 @@ class Benchmark(LoggingBase):
                 if bench_module.value in module_packages:
                     for package in module_packages[bench_module.value]:
                         out.write(package)
+                        if not package.endswith('\n'):
+                            out.write('\n')
 
     def add_deployment_package_nodejs(self, output_dir):
         # modify package.json
@@ -404,7 +410,7 @@ class Benchmark(LoggingBase):
     def add_deployment_package(self, output_dir):
         from sebs.faas.function import Language
 
-        if self.language == Language.PYTHON:
+        if self.language == Language.PYTHON or self.language == Language.PYPY:
             self.add_deployment_package_python(output_dir)
         elif self.language == Language.NODEJS:
             self.add_deployment_package_nodejs(output_dir)
@@ -487,7 +493,7 @@ class Benchmark(LoggingBase):
                     }
 
             # run Docker container to install packages
-            PACKAGE_FILES = {"python": "requirements.txt", "nodejs": "package.json", "bun": "package.json"}
+            PACKAGE_FILES = {"python": "requirements.txt", "nodejs": "package.json", "pypy": "requirements.txt", "bun": "package.json"}
             file = os.path.join(output_dir, PACKAGE_FILES[self.language_name])
             if os.path.exists(file):
                 try:

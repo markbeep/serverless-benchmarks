@@ -4,6 +4,7 @@
   "languages": [
     "python",
     "nodejs",
+    "pypy",
     "bun"
   ],
   "modules": []

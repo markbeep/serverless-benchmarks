@@ -264,6 +264,7 @@ class Language(Enum):
     PYTHON = "python"
     NODEJS = "nodejs"
     BUN = "bun"
+    PYPY = "pypy"
 
     # FIXME: 3.7+ python with future annotations
     @staticmethod
@@ -300,7 +301,7 @@ class Runtime:
 
     @staticmethod
     def deserialize(config: dict) -> Runtime:
-        languages = {"python": Language.PYTHON, "nodejs": Language.NODEJS, "bun": Language.BUN}
+        languages = {"python": Language.PYTHON, "nodejs": Language.NODEJS, "pypy": Language.PYPY, "bun": Language.BUN}
         return Runtime(language=languages[config["language"]], version=config["version"])
 
 
