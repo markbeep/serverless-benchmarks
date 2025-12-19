@@ -29,17 +29,20 @@ LANGUAGE_CONFIGS = {
         'nodejs': ['16'],
         'rust': ['1.80', '1.81', '1.82'],
         'java': ['17'],
-        'pypy': ['3.11']
+        'pypy': ['3.11'],
+        "bun": ["1.3"]
     },
     'azure': {
         'python': ['3.11', '3.10', '3.9', '3.8'],
         'nodejs': ['20', '18', '16'],
         'java': ['17'],
-        'pypy': ['3.11']
+        'pypy': ['3.11'],
+        "bun": ["1.3"]
     },
     'gcp': {
         'python': ['3.12', '3.11', '3.10', '3.9', '3.8'],
-        'nodejs': ['20', '18']
+        'nodejs': ['20'],
+        "bun": ["1.3"]
     },
     'local': {
         'python': ['3.11', '3.10', '3.9'],
@@ -150,7 +153,7 @@ class BenchmarkRunner:
             if self.verbose:
                 cmd.append('--verbose')
             
-            self.logger.debug(f"Command: {' '.join(cmd)}")
+            self.logger.info(f"Command: {' '.join(cmd)}")
             
             # Execute benchmark (run from experiment directory so experiments.json is saved there)
             start_time = time.time()
