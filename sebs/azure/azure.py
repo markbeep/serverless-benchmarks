@@ -138,14 +138,14 @@ class Azure(System):
         # custom runtimes: (execPath, [args])
         CUSTOM_EXEC = {
             "pypy": ("pypy/bin/pypy", ["handler.py"]),
-            "bun": ("boostrap", []),
+            "bun": ("bootstrap", []),
         }
         CONFIG_FILES = {
             "python": ["requirements.txt", ".python_packages"],
             "nodejs": ["package.json", "node_modules"],
             # Keep .python_packages at the root so custom handler can import deps.
             "pypy": ["requirements.txt", ".python_packages", "pypy", "handler.py"],
-            "bun": ["*"]
+            "bun": ["bootstrap", "bun", "runtime.js", "handler.js", "package.json", "node_modules"],
         }
         package_config = CONFIG_FILES[language_name]
 
