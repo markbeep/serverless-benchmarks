@@ -4,7 +4,6 @@ import shutil
 import time
 import uuid
 from typing import cast, Dict, List, Optional, Tuple, Type, Union  # noqa
-import fnmatch
 
 import boto3
 import docker
@@ -146,7 +145,7 @@ class AWS(System):
         os.makedirs(function_dir)
         # move all files to 'function' except config files like handler.py
         for file in os.listdir(directory):
-            if not any(fnmatch.fnmatch(file, pattern) for pattern in package_config):
+            if file not in package_config:
                 file = os.path.join(directory, file)
                 shutil.move(file, function_dir)
         # FIXME: use zipfile
