@@ -196,6 +196,8 @@ out_benchmark.json
 out_storage.json
 local_deployment.json
 experiments.json
+experiments
+results
 
 # Editors
 .vscode

@@ -2,6 +2,7 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 
 COPY --from=tianon/gosu:1.19-debian /usr/local/bin/gosu /usr/local/bin/gosu
+RUN apt-get update && apt-get install -y curl unzip
 
 RUN mkdir -p /sebs/
 COPY dockerfiles/bun_installer.sh /sebs/installer.sh

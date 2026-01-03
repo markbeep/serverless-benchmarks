@@ -147,7 +147,7 @@ class BenchmarkRunner:
             ]
             
             # Add --container-deployment if requested or required
-            if container_deployment or ((platform == 'aws' or platform == 'gcp') and language == 'pypy'):
+            if container_deployment or ((platform == 'aws' or platform == 'gcp') and language == 'pypy') or (platform == 'gcp' and language == 'bun'):
                 cmd.append('--container-deployment')
             
             if self.verbose:

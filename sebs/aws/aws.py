@@ -139,7 +139,7 @@ class AWS(System):
             "python": ["handler.py", "requirements.txt", ".python_packages"],
             "pypy": ["handler.py", "requirements.txt", ".python_packages"],
             "nodejs": ["handler.js", "package.json", "node_modules"],
-            "bun": ["*"], # ignore all files from bun / do not move them into a subdirectory
+            "bun": ["bootstrap", "bun", "runtime.js", "handler.js", "package.json", "node_modules"],
         }
         package_config = CONFIG_FILES[language_name]
         function_dir = os.path.join(directory, "function")
