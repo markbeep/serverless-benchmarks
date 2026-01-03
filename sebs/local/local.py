@@ -125,6 +125,7 @@ class Local(System):
             "python": ["handler.py", "requirements.txt", ".python_packages"],
             "nodejs": ["handler.js", "package.json", "node_modules"],
             "pypy": ["handler.py", "requirements.txt", ".python_packages"],
+            "bun": ["handler.js", "package.json", "node_modules"],
         }
         package_config = CONFIG_FILES[language_name]
         function_dir = os.path.join(directory, "function")
@@ -145,10 +146,11 @@ class Local(System):
         self, code_package: Benchmark, func_name: str, func: Optional[LocalFunction]
     ) -> LocalFunction:
 
-        container_name = "{}:run.local.{}.{}".format(
+        container_name = "{}:run.local.{}.{}-{}".format(
             self._system_config.docker_repository(),
             code_package.language_name,
             code_package.language_version,
+            self._system_config.version(),
         )
 
         environment = {
