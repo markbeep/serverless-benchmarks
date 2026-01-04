@@ -2,32 +2,28 @@
  * Custom server for Azure
  */
 
-import { handler } from "./handler.js";
+const handler = require("./handler.js");
 
-const PORT = parseInt(process.env.FUNCTIONS_CUSTOMHANDLER_PORT) || 3000;
+const PORT = parseInt(process.env.FUNCTIONS_CUSTOMHANDLER_PORT) || 8080;
 
 console.log(`Starting Bun server on port ${PORT}...`);
 
 Bun.serve({
   port: PORT,
   async fetch(req) {
-    let body = null;
-    if (req.body) {
-      try {
-        body = await req.json();
-      } catch (e) {}
-    }
-
     const context = {
-      invocationId:
-        req.headers.get("x-azure-functions-invocationid") || "unknown",
+      invocationId: req.headers.get("x-azure-functions-invocationid") || null,
     };
-
+    // default nodejs handler expects req.body to be already parsed (like express.js)
+    const mockReq = {
+      body: await req.json(),
+      headers: req.headers,
+    };
     try {
-      const result = await handler(req, context);
+      const result = await handler(context, mockReq);
 
-      return new Response(result.body, {
-        status: result.statusCode || 200,
+      return new Response(JSON.stringify(result.body), {
+        status: 200,
         headers: {
           "Content-Type": "application/json",
         },

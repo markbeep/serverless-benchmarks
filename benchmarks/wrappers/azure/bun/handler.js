@@ -1,13 +1,13 @@
 const path = require("path"),
   fs = require("fs");
 
-module.exports = async function (req, context) {
+module.exports = async function (context, req) {
   if ("connection_string" in req.body) {
     process.env["STORAGE_CONNECTION_STRING"] = req.body.connection_string;
   }
   var begin = Date.now() / 1000;
   var start = process.hrtime();
-  var func = require("./function");
+  var func = require("./handler/function"); // different to nodejs for azure
   var ret = func.handler(req.body);
   return ret.then(
     result => {

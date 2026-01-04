@@ -1,5 +1,4 @@
 import datetime
-import fnmatch
 import json
 import re
 import os
@@ -138,22 +137,22 @@ class Azure(System):
         # custom runtimes: (execPath, [args])
         CUSTOM_EXEC = {
             "pypy": ("pypy/bin/pypy", ["handler.py"]),
-            "bun": ("bootstrap", []),
+            "bun": ("bun", ["runtime.js"]),
         }
         CONFIG_FILES = {
             "python": ["requirements.txt", ".python_packages"],
             "nodejs": ["package.json", "node_modules"],
             # Keep .python_packages at the root so custom handler can import deps.
             "pypy": ["requirements.txt", ".python_packages", "pypy", "handler.py"],
-            "bun": ["bootstrap", "bun", "runtime.js", "handler.js", "package.json", "node_modules"],
+            "bun": ["bun", "runtime.js", "handler.js", "package.json", "node_modules"],
         }
         package_config = CONFIG_FILES[language_name]
 
         handler_dir = os.path.join(directory, "handler")
         os.makedirs(handler_dir)
-        for f in os.listdir(directory):
-            if not any(fnmatch.fnmatch(f, pattern) for pattern in package_config):
-                source_file = os.path.join(directory, f)
+        for file in os.listdir(directory):
+            if file not in package_config:
+                source_file = os.path.join(directory, file)
                 shutil.move(source_file, handler_dir)
 
         # generate function.json

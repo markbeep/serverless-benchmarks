@@ -321,45 +321,46 @@
               "azure-cosmos"
             ]
           }
-        },
-        "bun": {
-          "base_images": {
-            "x64": {
-              "1.2": "oven/bun:1.2",
-              "1.3": "oven/bun:1.3"
-            },
-            "arm64": {
-              "1.2": "oven/bun:1.2",
-              "1.3": "oven/bun:1.3"
-            }
+        }
+      },
+      "bun": {
+        "base_images": {
+          "x64": {
+            "1.2": "oven/bun:1.2",
+            "1.3": "oven/bun:1.3"
           },
-          "images": [
-            "build"
+          "arm64": {
+            "1.2": "oven/bun:1.2",
+            "1.3": "oven/bun:1.3"
+          }
+        },
+        "images": [
+          "build"
+        ],
+        "deployment": {
+          "files": [
+            "handler.js",
+            "storage.js",
+            "runtime.js"
           ],
-          "deployment": {
-            "files": [
-              "handler.js",
-              "storage.js",
-              "runtime.js"
-            ],
-            "packages": {
-              "uuid": "3.4.0"
-            }
+          "packages": {
+            "@azure/storage-blob": "^12.0.0",
+            "uuid": "3.4.0"
           }
         }
-      },
-      "images": {
-        "manage": {
-          "username": "docker_user"
-        }
-      },
-      "architecture": [
-        "x64"
-      ],
-      "deployments": [
-        "package"
-      ]
-    }
+      }
+    },
+    "images": {
+      "manage": {
+        "username": "docker_user"
+      }
+    },
+    "architecture": [
+      "x64"
+    ],
+    "deployments": [
+      "package"
+    ]
   },
   "gcp": {
     "languages": {
