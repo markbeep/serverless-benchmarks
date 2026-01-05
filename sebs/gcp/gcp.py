@@ -95,11 +95,12 @@ class GCP(System):
     ) -> str:
         # Create function name
         resource_id = resources.resources_id if resources else self.config.resources.resources_id
-        func_name = "sebs-{}-{}-{}-{}".format(
+        func_name = "sebs-{}-{}-{}-{}-{}".format(
             resource_id,
             code_package.benchmark,
             code_package.language_name,
             code_package.language_version,
+            code_package.architecture
         )
         return GCP.format_function_name(func_name) if not code_package.container_deployment else func_name.replace(".", "-")
 
@@ -110,6 +111,10 @@ class GCP(System):
         func_name = func_name.replace("-", "_")
         func_name = func_name.replace(".", "_")
         return func_name
+
+    @staticmethod
+    def is_service_function(full_function_name: str):
+        return "/services/" in full_function_name
 
     """
         Apply the system-specific code packaging routine to build benchmark.
@@ -220,10 +225,17 @@ class GCP(System):
         function_cfg = FunctionConfig.from_benchmark(code_package)
         architecture = function_cfg.architecture.value
 
+        if architecture == "arm64" and not container_deployment:
+            raise RuntimeError("GCP does not support arm64 for non-container deployments")
+            
+
         if container_deployment:
             full_service_name = GCP.get_full_service_name(project_name, location, func_name)
             get_req = self.run_client.projects().locations().services().get(name=full_service_name)
         else:
+            if benchmark.language_name == "pypy":
+                raise RuntimeError("PyPy Zip deployment is not supported on GCP")
+
             full_func_name = GCP.get_full_function_name(project_name, location, func_name)
             code_package_name = cast(str, os.path.basename(package))
             code_package_name = f"{architecture}-{code_package_name}"
@@ -478,6 +490,7 @@ class GCP(System):
             # Cloud Run v2 Service Update
             service_body = {
                 "template": {
+                    "maxInstanceRequestConcurrency" : 1,
                     "containers": [
                         {
                             "image": container_uri,
@@ -558,15 +571,13 @@ class GCP(System):
 
     def _update_envs(self, full_function_name: str, envs: dict) -> dict:
 
-        if "/services/" in full_function_name:
+        if GCP.is_service_function(full_function_name):
             # Envs are in template.containers[0].env (list of {name, value})
             get_req = self.run_client.projects().locations().services().get(name=full_function_name)
             response = get_req.execute()
             
-            # Extract existing envs
             existing_envs = {}
             if "template" in response and "containers" in response["template"]:
-                # Assume single container
                 container = response["template"]["containers"][0]
                 if "env" in container:
                     for e in container["env"]:
@@ -613,7 +624,7 @@ class GCP(System):
         assert code_package.has_input_processed
 
         function = cast(GCPFunction, function)
-        if code_package.language_name == "pypy":
+        if code_package.container_deployment:
             full_func_name = GCP.get_full_service_name(
                 self.config.project_name, 
                 self.config.region, 
@@ -631,7 +642,7 @@ class GCP(System):
         if len(envs) > 0:
             envs = self._update_envs(full_func_name, envs)
 
-        if "/services/" in full_func_name:
+        if GCP.is_service_function(full_func_name):
             # Cloud Run Configuration Update
             
             # Prepare envs list
@@ -641,11 +652,13 @@ class GCP(System):
 
             service_body = {
                 "template": {
+                    "maxInstanceRequestConcurrency" : 1,
                     "containers": [
                         {
+                            "image": code_package.container_uri,
                             "resources": {
                                 "limits": {
-                                    "memory": f"{memory}Mi",
+                                    "memory": f"{memory if memory > 512 else 512}Mi",
                                 }
                             },
                             "env": env_vars
@@ -926,15 +939,15 @@ class GCP(System):
 
     def is_deployed(self, func_name: str, versionId: int = -1) -> Tuple[bool, int]:
         
-        if "pypy" in func_name:
+        #v1 functions don't allow hyphens, new functions don't allow underscores
+        if "pypy" in func_name or '-' in func_name:
              # Cloud Run Service
              service_name = func_name.replace("_", "-").lower()
              name = GCP.get_full_service_name(self.config.project_name, self.config.region, service_name)
              try:
                   svc = self.run_client.projects().locations().services().get(name=name).execute()
-                  conditions = svc.get("status", {}).get("conditions", [])
-                  ready = next((c for c in conditions if c["type"] == "Ready"), None)
-                  is_ready = ready and ready["status"] == "True"
+                  conditions = svc.get("terminalCondition", {})
+                  is_ready = conditions.get("type", "") == "Ready"
                   return (is_ready, 0)
              except HttpError:
                   return (False, -1)
