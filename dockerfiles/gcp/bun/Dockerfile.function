@@ -5,4 +5,4 @@ WORKDIR /app
 COPY . function/
 COPY runtime.js handler.js ./
 
-ENTRYPOINT [ "bun", "runtime.js" ]
+ENTRYPOINT [ "bun", "--bun", "runtime.js" ]

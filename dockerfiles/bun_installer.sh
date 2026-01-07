@@ -21,5 +21,5 @@ rm bun.zip
 
 rm -r bun.lock
 # moves to correct directory on AWS if needed
-echo -e '#!/bin/bash\nif $LAMBDA_TASK_ROOT; then cd $LAMBDA_TASK_ROOT; fi\n./bun runtime.js' > bootstrap
+echo -e '#!/bin/bash\nif $LAMBDA_TASK_ROOT; then cd $LAMBDA_TASK_ROOT; fi\n./bun --bun runtime.js' > bootstrap
 chmod +x bootstrap
